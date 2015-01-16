@@ -71,34 +71,39 @@ print(dirtyByDay)
 ## 7 2012-11-14   288
 ## 8 2012-11-30   288
 ```
+
+```r
+rm (dataDirty)
+rm (dirtyByDay)
+```
  
 We will fill in missing values with the mean of the 5 minute interval for 
 the day of week (Sun-Sat).
 
 
 ```r
-# library(data.table)
-dataClean <- originaldata[!is.na(originaldata$steps),]
-# averageByIntervalAndWday <- data.table(ddply(dataClean[c(1,3,5)], .(interval, wday), numcolwise(mean)))
-averageByIntervalAndWday <- ddply(dataClean[c(1,3,5)], .(interval, wday), numcolwise(mean))
+# make a copy so the original data still has missing values
+dataClean <- originaldata 
+
+# create lookup table
+dataNoMissingValues <- originaldata[!is.na(originaldata$steps),]
+averageByIntervalAndWday <- ddply(dataNoMissingValues[c(1,3,5)], .(interval, wday), numcolwise(mean))
 averageByIntervalAndWday$steps <- round(averageByIntervalAndWday$steps, digits=0)
+rm(dataNoMissingValues)
 
-# TODO finish
-# setkey(averageByIntervalAndWday, "interval", "wday")
-
-# for now just look up against dirty data
-
-dataDirty$steps <- averageByIntervalAndWday[averageByIntervalAndWday$interval==dataDirty$interval & averageByIntervalAndWday$wday==dataDirty$wday,]$steps
-```
-
-```
-## Warning in averageByIntervalAndWday$interval == dataDirty$interval: longer
-## object length is not a multiple of shorter object length
-```
-
-```
-## Warning in averageByIntervalAndWday$wday == dataDirty$wday: longer object
-## length is not a multiple of shorter object length
+# create function for looking up missing values
+lookupMissingValue <- function(interval, wday) {
+  averageByIntervalAndWday[averageByIntervalAndWday$interval==interval & averageByIntervalAndWday$wday==wday,]$steps
+}
+  
+# lookup missing values
+for(i in 1:length(dataClean$date)) {
+  if(is.na(dataClean$steps[i])) {
+    interval <- dataClean$interval[i]
+    wday <- dataClean$wday[i]
+    dataClean$steps[i] <- lookupMissingValue(interval, wday)
+  }
+}
 ```
 
 Summarize total data by day
@@ -138,7 +143,7 @@ print(meanStepsPerDay)
 ```
 
 ```
-## [1] 10766
+## [1] 10821
 ```
 
 
@@ -147,14 +152,14 @@ print(medianStepsPerDay)
 ```
 
 ```
-## [1] 10765
+## [1] 11015
 ```
 
 The mean total number of steps taken per day is 
-10,766.
+10,821.
 
 The median total number of steps taken per day is 
-10,765.
+11,015.
 
 # 3 - What is the average daily activity pattern?
 
