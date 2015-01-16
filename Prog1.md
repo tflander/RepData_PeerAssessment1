@@ -8,9 +8,26 @@ forked from https://github.com/rdpeng/RepData_PeerAssessment1
 ```r
 unzip("activity.zip")
 data <- read.csv("activity.csv")
-dataWithoutMissingValues <- na.omit(data)
 ```
 
+Convert date factor to date
+
+```r
+data$datePosix <- as.POSIXlt(data$date)
+```
+
+Add the interval in minutes to the timestamp to get samples in 5 minute intervals
+
+```r
+data$datePosix$min <- data$datePosix$min + data$interval 
+```
+
+Summarize total data by day
+
+```r
+library(plyr)
+totalsByDay <- ddply(data[1:2], .(date), numcolwise(sum))
+```
 # What is mean total number of steps taken per day?
 
 ## Make a histogram of the total number of steps taken each day
@@ -19,9 +36,9 @@ dataWithoutMissingValues <- na.omit(data)
 
 ```r
 hist(
-  dataWithoutMissingValues$steps, 
-  main="Total number of steps taken each day",
-  xlab = "steps"
+  totalsByDay$steps, 
+  main="Total Number of Steps Taken Each Day",
+  xlab = "steps per day"
 )
 ```
 
@@ -31,10 +48,50 @@ hist(
 
 
 ```r
-meanStepsPerDay <- mean(data$steps, na.rm = TRUE)
-medianStepsPerDay <- median(data$steps, na.rm = TRUE)
+meanStepsPerDay <- round(mean(totalsByDay$steps, na.rm = TRUE), digits = 0)
+medianStepsPerDay <- median(totalsByDay$steps, na.rm = TRUE)
 ```
 
-The mean total number of steps taken per day is 37.3825996.
 
-The median total number of steps taken per day is 0.
+```r
+print(meanStepsPerDay)
+```
+
+```
+## [1] 10766
+```
+
+```r
+print(medianStepsPerDay)
+```
+
+```
+## [1] 10765
+```
+
+The mean total number of steps taken per day is 
+10,766.
+
+The median total number of steps taken per day is 
+10,765.
+
+# What is the average daily activity pattern?
+
+## Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+Note: Since we have 288 samples per day, we can deduce that samples are already in 
+5-minute intervals.  This is confirmed by the data in the interval column.  Therefore, we can label the x-axis using sample days 0-60 using 288 samples per day.
+
+
+```r
+numDays <- as.integer(max(data$datePosix) - min(data$datePosix)) + 1
+samplesPerDay <- length(data$date) / numDays
+myts <- ts(data$steps, frequency=samplesPerDay) 
+plot(myts, xlab="day", ylab="steps")
+```
+
+![plot of chunk timeseries](figure/timeseries-1.png) 
+
+
+## Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
