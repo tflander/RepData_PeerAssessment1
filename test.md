@@ -1,7 +1,7 @@
 Reproducible ResearchProject One -- Todd Flanders
 ========================================================
 
-# 1 - Loading and preprocessing the data
+# 1 - Create data for analysis
 
 
 ```r
@@ -77,35 +77,43 @@ the day of week (Sun-Sat).
 
 
 ```r
-# library(data.table)
-dataClean <- originaldata[!is.na(originaldata$steps),]
-# averageByIntervalAndWday <- data.table(ddply(dataClean[c(1,3,5)], .(interval, wday), numcolwise(mean)))
+dataClean <- originaldata[!is.na(data$steps),]
+```
+
+```
+## Error in data$steps: object of type 'closure' is not subsettable
+```
+
+```r
 averageByIntervalAndWday <- ddply(dataClean[c(1,3,5)], .(interval, wday), numcolwise(mean))
+```
+
+```
+## Error in empty(.data): object 'dataClean' not found
+```
+
+```r
 averageByIntervalAndWday$steps <- round(averageByIntervalAndWday$steps, digits=0)
+```
 
+```
+## Error in eval(expr, envir, enclos): object 'averageByIntervalAndWday' not found
+```
+
+```r
 # TODO finish
-# setkey(averageByIntervalAndWday, "interval", "wday")
-
-# for now just look up against dirty data
-
-dataDirty$steps <- averageByIntervalAndWday[averageByIntervalAndWday$interval==dataDirty$interval & averageByIntervalAndWday$wday==dataDirty$wday,]$steps
-```
-
-```
-## Warning in averageByIntervalAndWday$interval == dataDirty$interval: longer
-## object length is not a multiple of shorter object length
-```
-
-```
-## Warning in averageByIntervalAndWday$wday == dataDirty$wday: longer object
-## length is not a multiple of shorter object length
 ```
 
 Summarize total data by day
 
 
 ```r
+# TODO: this needs to be on the data with imputed values
 totalsByDay <- ddply(dataClean[1:2], .(date), numcolwise(sum))
+```
+
+```
+## Error in empty(.data): object 'dataClean' not found
 ```
 
 # 2 - What is mean total number of steps taken per day?
@@ -122,14 +130,27 @@ hist(
 )
 ```
 
-![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png) 
+```
+## Error in hist(totalsByDay$steps, main = "Total Number of Steps Taken Each Day", : object 'totalsByDay' not found
+```
 
 ## Calculate and report the mean and median total number of steps taken per day
 
 
 ```r
 meanStepsPerDay <- round(mean(totalsByDay$steps, na.rm = TRUE), digits = 0)
+```
+
+```
+## Error in mean(totalsByDay$steps, na.rm = TRUE): object 'totalsByDay' not found
+```
+
+```r
 medianStepsPerDay <- median(totalsByDay$steps, na.rm = TRUE)
+```
+
+```
+## Error in median(totalsByDay$steps, na.rm = TRUE): object 'totalsByDay' not found
 ```
 
 
@@ -138,7 +159,7 @@ print(meanStepsPerDay)
 ```
 
 ```
-## [1] 10766
+## Error in print(meanStepsPerDay): object 'meanStepsPerDay' not found
 ```
 
 
@@ -147,35 +168,5 @@ print(medianStepsPerDay)
 ```
 
 ```
-## [1] 10765
+## Error in print(medianStepsPerDay): object 'medianStepsPerDay' not found
 ```
-
-The mean total number of steps taken per day is 
-10,766.
-
-The median total number of steps taken per day is 
-10,765.
-
-# 3 - What is the average daily activity pattern?
-
-## Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-
-
-```r
-# TODO:  Need to average across all days, not break down per day
-myts <- ts(dataClean$steps, frequency=samplesPerDay) 
-plot(myts, xlab="day", ylab="avg steps for 5-minute interval")
-title(main="Steps Taken in 5-Minute Intervals per Day")
-```
-
-![plot of chunk timeseries](figure/timeseries-1.png) 
-
-
-## Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-
-
-```r
-averageByInterval <- ddply(dataClean[c(1,3)], .(interval), numcolwise(mean))
-```
-
-

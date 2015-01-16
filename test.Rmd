@@ -1,7 +1,7 @@
 Reproducible ResearchProject One -- Todd Flanders
 ========================================================
 
-# 1 - Loading and preprocessing the data
+# 1 - Create data for analysis
 
 ```{r import dependancies}
 library(plyr)
@@ -56,24 +56,16 @@ We will fill in missing values with the mean of the 5 minute interval for
 the day of week (Sun-Sat).
 
 ```{r calulateMissingData}
-# library(data.table)
-dataClean <- originaldata[!is.na(originaldata$steps),]
-# averageByIntervalAndWday <- data.table(ddply(dataClean[c(1,3,5)], .(interval, wday), numcolwise(mean)))
+dataClean <- originaldata[!is.na(data$steps),]
 averageByIntervalAndWday <- ddply(dataClean[c(1,3,5)], .(interval, wday), numcolwise(mean))
 averageByIntervalAndWday$steps <- round(averageByIntervalAndWday$steps, digits=0)
-
 # TODO finish
-# setkey(averageByIntervalAndWday, "interval", "wday")
-
-# for now just look up against dirty data
-
-dataDirty$steps <- averageByIntervalAndWday[averageByIntervalAndWday$interval==dataDirty$interval & averageByIntervalAndWday$wday==dataDirty$wday,]$steps
-
 ```
 
 Summarize total data by day
 
 ```{r summarize}
+# TODO: this needs to be on the data with imputed values
 totalsByDay <- ddply(dataClean[1:2], .(date), numcolwise(sum))
 ```
 
@@ -104,30 +96,3 @@ print(meanStepsPerDay)
 ```{r printMedian}
 print(medianStepsPerDay)
 ```
-
-The mean total number of steps taken per day is 
-`r prettyNum(meanStepsPerDay,big.mark=",",scientific=F)`.
-
-The median total number of steps taken per day is 
-`r prettyNum(medianStepsPerDay,big.mark=",",scientific=F)`.
-
-# 3 - What is the average daily activity pattern?
-
-## Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-
-```{r timeseries, fig.width=10, fig.height=4}
-# TODO:  Need to average across all days, not break down per day
-myts <- ts(dataClean$steps, frequency=samplesPerDay) 
-plot(myts, xlab="day", ylab="avg steps for 5-minute interval")
-title(main="Steps Taken in 5-Minute Intervals per Day")
-
-```
-
-
-## Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-
-```{r summarizeByInterval}
-averageByInterval <- ddply(dataClean[c(1,3)], .(interval), numcolwise(mean))
-```
-
-
